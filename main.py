@@ -110,7 +110,7 @@ def myfunc(rpm, s, theta, thetaC, deltaThetaC):
 
     # Fp
     p_theta = p(rpm, s, theta, thetaC, deltaThetaC)
-    fraction = ((math.pi*D ^ 2)/4)*p_theta
+    fraction = ((math.pi*(D ^ 2))/4)*p_theta
     RW2Cos = R*(W(rpm)) ^ 2*math.cos(theta)
 
     F_pied_output = fraction - mpiston*RW2Cos
@@ -121,5 +121,7 @@ def myfunc(rpm, s, theta, thetaC, deltaThetaC):
     p_output = p(rpm, s, theta, thetaC, deltaThetaC)
 
     SommeF = mbielle*RW2Cos
+
+    t = 1
 
     return (V_output, Q_output, F_pied_output, F_tete_output, p_output, t)
