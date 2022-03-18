@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 
 # il faut vérifier toutes les valeurs
 
-tau = 9 #@valeur taux compression@ #[-]
-D = 0.5 #@valeur alesage@ #[m]
-C = 0.1 #@valeur course@ #[m]
+tau = 10 #@valeur taux compression@ #[-]
+D = 0.76 #@valeur alesage@ #[m]
+C = 0.8 #@valeur course@ #[m]
 L = 0.15 #@valeur longueur bielle@ #[m]
 mpiston = 0.5 #@valeur masse piston@ #[kg]
 mbielle = 0.3 #@valeur masse bielle@ #[kg]
-Q = 2 #@valeur chaleur emise par fuel par kg de melange admis@ #[J/kg_inlet gas]
+Q = 2.8 #@valeur chaleur emise par fuel par kg de melange admis@ #[J/kg_inlet gas]
 
 R = C/2
 beta = L/R
