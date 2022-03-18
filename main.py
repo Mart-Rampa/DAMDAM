@@ -2,50 +2,63 @@
 import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
+import math
 
 # il faut vérifier toutes les valeurs
 
-tau = 10 #@valeur taux compression@ #[-]
-D = 0.76 #@valeur alesage@ #[m]
-C = 0.8 #@valeur course@ #[m]
-L = 0.15 #@valeur longueur bielle@ #[m]
-mpiston = 0.5 #@valeur masse piston@ #[kg]
-mbielle = 0.3 #@valeur masse bielle@ #[kg]
-Q = 2.8 #@valeur chaleur emise par fuel par kg de melange admis@ #[J/kg_inlet gas]
+tau = 10  # @valeur taux compression@ #[-]
+D = 0.76  # @valeur alesage@ #[m]
+C = 0.8  # @valeur course@ #[m]
+L = 0.15  # @valeur longueur bielle@ #[m]
+mpiston = 0.5  # @valeur masse piston@ #[kg]
+mbielle = 0.3  # @valeur masse bielle@ #[kg]
+# @valeur chaleur emise par fuel par kg de melange admis@ #[J/kg_inlet gas]
+Q = 2.8
 
 R = C/2
 beta = L/R
 gamma = 1.3
 
+
 def Vc():
-    return ((np.pi/D^2)/4)*2*R
+    return ((math.pi/D ^ 2)/4)*2*R
+
 
 def W(rpm):
     return rpm*60
 
+
 def Qtot():
     return Q
 
+
 def V(theta):
-    zp = R*(1 - cos(theta) + beta - sqrt(beta^2 - (sin(theta))^2))
+    zp = R*(1 - math.cos(theta) + beta
+            - math.sqrt(beta ^ 2 - (math.sin(theta)) ^ 2))
     return Vc()/2 * zp + Vc()/(tau - 1)
 
+
 def Q(theta, thetaC, deltaThetaC):
-    resultat = Qtot()*0.5*(1 - cos(np.pi*((theta - thetaC)/deltaThetaC)))
+    resultat = Qtot()*0.5*(1 - math.cos(math.pi*((theta - thetaC)/deltaThetaC)))
     return resultat
 
-def dVdTheta():
-    return Vc()*0.5*(sin(theta)+(beta^2-(sin(theta))^2)^(-0.5) * cos(theta) * sin(theta))
+
+def dVdTheta(theta):
+    return Vc()*0.5*(math.sin(theta)+(beta ^ 2-(math.sin(theta)) ^ 2) ^ (-0.5) * math.cos(theta) * math.sin(theta))
+
 
 def dQDTheta(theta, thetaC, deltaThetaC):
-    resultat = (Q()*np.pi/(2*deltaThetaC))*sin(np.pi*((theta-thetaC)/deltaThetaC))
+    resultat = (Q()*math.pi/(2*deltaThetaC)) * \
+                math.sin(math.pi*((theta-thetaC)/deltaThetaC))
     return resultat
+
 
 def p(rpm, s, theta, thetaC, deltaThetaC):
 
-    def model(p,theta_model):
-        dpdTheta = -gamma * (p/V())*dVdTheta() + (gamma - 1) * 1/V() * dQDTheta(theta, thetaC, deltaThetaC)
-    return dpdTheta
+    def model(p, theta_model):
+        dpdTheta = -gamma * (p/V())*dVdTheta(theta) + (gamma - 1) * \
+                             1/V() * dQDTheta(theta, thetaC, deltaThetaC)
+        return dpdTheta
 
     # initial condition
     # vérifier que ca vaut s
@@ -56,10 +69,10 @@ def p(rpm, s, theta, thetaC, deltaThetaC):
     theta_t = theta
 
     # solve ODE
-    p = odeint(model,y0,theta_t)
+    p = odeint(model, y0, theta_t)
 
     # plot results
-    plt.plot(theta_t,p)
+    plt.plot(theta_t, p)
     plt.xlabel('theta')
     plt.ylabel('p(theta)')
     plt.show()
@@ -82,6 +95,8 @@ F_pied_output et F_tete_output, en [N] : l'évolution des differentes forces s'a
 p_output, en [Pa] : l'évolution de la pression dans le cylindre en fonction de l'angle de rotation (theta)
 t en [m] : l'épaisseur critique, (voir schéma de l'énoncé)
 """
+
+
 def myfunc(rpm, s, theta, thetaC, deltaThetaC):
     #VOTRE CODE
 
@@ -95,11 +110,16 @@ def myfunc(rpm, s, theta, thetaC, deltaThetaC):
 
     # Fp
     p_theta = p(rpm, s, theta, thetaC, deltaThetaC)
-    fraction = ()(np.pi*D^2)/4)*p_theta
-    RW2Cos = R*(W(rpm))^2*cos(theta)
+    fraction = ((math.pi*D ^ 2)/4)*p_theta
+    RW2Cos = R*(W(rpm)) ^ 2*math.cos(theta)
 
-    Fp = fraction - mpiston*RW2Cos
-    Ft = -fraction+(mpiston+mbielle)*RW2Cos
+    F_pied_output = fraction - mpiston*RW2Cos
+    F_tete_output = -fraction+(mpiston+mbielle)*RW2Cos
 
+    Q_output = Q(theta, thetaC, deltaThetaC)
 
-    return (V_output, Q_output, F_pied_output, F_tete_output, p_output, t)  ;
+    p_output = p(rpm, s, theta, thetaC, deltaThetaC)
+
+    SommeF = mbielle*RW2Cos
+
+    return (V_output, Q_output, F_pied_output, F_tete_output, p_output, t)
