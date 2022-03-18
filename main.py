@@ -62,14 +62,14 @@ def p(rpm, s, theta, thetaC, deltaThetaC):
 
     # initial condition
     # vérifier que ca vaut s
-    y0 = s
+    p0 = s
 
     # time points
     #theta_t = np.linspace(0,20)
     theta_t = theta
 
     # solve ODE
-    p = odeint(model, y0, theta_t)
+    p = odeint(model, p0, theta_t)
 
     # plot results
     plt.plot(theta_t, p)
