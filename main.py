@@ -9,7 +9,7 @@ import math
 
 tau = 9  # @valeur taux compression@ #[-]
 D = 0.076  # @valeur alesage@ #[m]
-C = 0.8  # @valeur course@ #[m]
+C = 0.08  # @valeur course@ #[m]
 L = 0.15  # @valeur longueur bielle@ #[m]
 mpiston = 0.5  # @valeur masse piston@ #[kg]
 mbielle = 0.3  # @valeur masse bielle@ #[kg]
@@ -34,7 +34,7 @@ def Qtot():
 
 
 def V(theta):
-    zp = R*(1 - np.cos(theta) + beta - (beta**2 - (np.sin(theta))**2)**0,5)
+    zp = R*(1 - np.cos(theta) + beta - (beta**2 - (np.sin(theta))**2)**1/2)
     return Vc()/2 * zp + Vc()/(tau - 1)
 
 
@@ -60,26 +60,8 @@ def p_fct(rpm, s, theta, thetaC, deltaThetaC):
 
     # initial condition
     # vérifier que ca vaut s
-    p0 = s
-
-    print(s)
-
-    # time points
-    #theta_t = np.linspace(0,20)
-    theta_t = theta
-
-    # solve ODE
-    print()
-
-    #p = odeint(model, p0, theta_t)
 
     result_solve_ivp = solve_ivp(model, (theta[0], theta[-1]), [s], t_eval=theta).y[0]
-
-    # plot results
-    plt.plot(theta_t, p)
-    plt.xlabel('theta')
-    plt.ylabel('p(theta)')
-    plt.show()
 
     return result_solve_ivp
 
@@ -117,7 +99,7 @@ def myfunc(rpm, s, theta, thetaC, deltaThetaC):
     # Fp
     p_theta = p_fct(rpm, s, theta, thetaC, deltaThetaC)
     fraction = ((math.pi*(D ** 2))/4)*p_theta
-    RW2Cos = R*(W(rpm)) ** 2*math.cos(theta)
+    RW2Cos = R*(W(rpm)) ** 2*np.cos(theta)
 
     F_pied_output = fraction - mpiston*RW2Cos
     F_tete_output = -fraction+(mpiston+mbielle)*RW2Cos
@@ -132,13 +114,34 @@ def myfunc(rpm, s, theta, thetaC, deltaThetaC):
 
     return (V_output, Q_output, F_pied_output, F_tete_output, p_output, t)
 
+
+
 rpm = 4106
 s = 2.5
 theta = np.linspace(-180, 180, 1000)
 thetaC = 21
 deltaThetaC = 48
 
+thetaR = np.deg2rad(theta)
+theta = thetaR
+
+
 v, q, fpied, ftete, p, dq = myfunc(rpm, s, theta, thetaC, deltaThetaC)
 
+
+# plot results
+plt.plot(theta, p)
+plt.xlabel('theta')
+plt.ylabel('p')
+plt.show()
+
 plt.plot(theta, v)
-plt.plot(theta, dVdTheta(theta))
+plt.xlabel('theta')
+plt.ylabel('v')
+plt.show
+
+
+
+
+
+print('end')
