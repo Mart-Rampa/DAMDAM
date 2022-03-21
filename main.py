@@ -1,13 +1,14 @@
 # yolo
 import numpy as np
 from scipy.integrate import odeint
+from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import math
 
 # il faut vérifier toutes les valeurs
 
 tau = 9  # @valeur taux compression@ #[-]
-D = 0.76  # @valeur alesage@ #[m]
+D = 0.076  # @valeur alesage@ #[m]
 C = 0.8  # @valeur course@ #[m]
 L = 0.15  # @valeur longueur bielle@ #[m]
 mpiston = 0.5  # @valeur masse piston@ #[kg]
@@ -19,9 +20,9 @@ R = C/2
 beta = L/R
 gamma = 1.3
 
-sdf q
+
 def Vc():
-    return ((math.pi/D ** 2)/4)*2*R
+    return ((np.pi/D ** 2)/4)*2*R
 
 
 def W(rpm):
@@ -33,48 +34,54 @@ def Qtot():
 
 
 def V(theta):
-    zp = R*(1 - np.cos(theta) + beta - np.sqrt(beta**2 - (np.sin(theta))**2))
+    zp = R*(1 - np.cos(theta) + beta - (beta**2 - (np.sin(theta))**2)**0,5)
     return Vc()/2 * zp + Vc()/(tau - 1)
 
 
-def Q(theta, thetaC, deltaThetaC):
+def Q_fct(theta, thetaC, deltaThetaC):
     resultat = Q*0.5*(1 - np.cos(np.pi*((theta - thetaC)/deltaThetaC)))
     return resultat
 
 
 def dVdTheta(theta):
-    return Vc()*0.5*(np.sin(theta)+(beta ** 2-(np.sin(theta))**2)**(-0.5) * np.cos(theta) * np.sin(theta))
+    return Vc()*0.5*(np.sin(theta)+ ( ( (beta ** 2) -(np.sin(theta))**2)**(-0.5) ) * np.cos(theta) * np.sin(theta))
 
 
 def dQDTheta(theta, thetaC, deltaThetaC):
-    resultat = (Q(theta, thetaC, deltaThetaC)*np.pi/(2*deltaThetaC)
-                ) * np.sin(math.pi*((theta-thetaC)/deltaThetaC))
+    resultat = (Q_fct(theta, thetaC, deltaThetaC)*np.pi/(2*deltaThetaC)) * np.sin(math.pi*((theta-thetaC)/deltaThetaC))
     return resultat
 
 
-def p(rpm, s, theta, thetaC, deltaThetaC):
+def p_fct(rpm, s, theta, thetaC, deltaThetaC):
 
-    def model(p, theta_model):
-        dpdTheta = -gamma * (p/V(theta))*dVdTheta(theta) + (gamma - 1) * \
-                             1/V(theta) * dQDTheta(theta, thetaC, deltaThetaC)
+    def model(p, theta):
+        dpdTheta = -gamma * (p/V(theta))*dVdTheta(theta) + (gamma - 1) * 1/V(theta) * dQDTheta(theta, thetaC, deltaThetaC)
         return dpdTheta
 
     # initial condition
     # vérifier que ca vaut s
     p0 = s
 
+    print(s)
+
     # time points
     #theta_t = np.linspace(0,20)
     theta_t = theta
 
     # solve ODE
-    p = odeint(model, p0, theta_t)
+    print()
+
+    #p = odeint(model, p0, theta_t)
+
+    result_solve_ivp = solve_ivp(model, (theta[0], theta[-1]), [s], t_eval=theta).y[0]
 
     # plot results
     plt.plot(theta_t, p)
     plt.xlabel('theta')
     plt.ylabel('p(theta)')
     plt.show()
+
+    return result_solve_ivp
 
 
 """
@@ -108,23 +115,22 @@ def myfunc(rpm, s, theta, thetaC, deltaThetaC):
     V_output = V(theta)
 
     # Fp
-    p_theta = p(rpm, s, theta, thetaC, deltaThetaC)
+    p_theta = p_fct(rpm, s, theta, thetaC, deltaThetaC)
     fraction = ((math.pi*(D ** 2))/4)*p_theta
     RW2Cos = R*(W(rpm)) ** 2*math.cos(theta)
 
     F_pied_output = fraction - mpiston*RW2Cos
     F_tete_output = -fraction+(mpiston+mbielle)*RW2Cos
 
-    Q_output = Q(theta, thetaC, deltaThetaC)
+    Q_output = Q_fct(theta, thetaC, deltaThetaC)
 
-    p_output = p(rpm, s, theta, thetaC, deltaThetaC)
+    p_output = p_fct(rpm, s, theta, thetaC, deltaThetaC)
 
     SommeF = mbielle*RW2Cos
 
     t = 1
 
     return (V_output, Q_output, F_pied_output, F_tete_output, p_output, t)
-
 
 rpm = 4106
 s = 2.5
